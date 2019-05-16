@@ -47,7 +47,6 @@ exports.deleteUser = (id, rev) =>
 
 
 
-
 //Lista las Bases de datos
 /*couch.listDatabases().then(function(dbs){
 	console.log(dbs);
@@ -143,3 +142,74 @@ db.getDoc('Users', function(err, doc){
 		});
 	}
 });*/
+
+// const _ = require('lodash');
+//
+// //DATABASE
+// //User   {id: int, name: String , email: String}
+// //Reports   {id: int, information: String , author: User.id}
+// //ReportsUser  {'userId':{'report1': .., 'report2': ...}}
+//
+// let Users = {};
+// let Doctors = {};
+// let Patients = {};
+// let Reports = {};
+//
+// //Funcionalidad añadir
+// exports.createUser = data =>
+// 	new Promise((accept, reject) => {
+// 		//check if user data is right
+// 		if (Users[data.userId] === data) {
+// 			reject("Ya existe un usuario con los mismos datos")
+// 		}
+// 		if (data !== '') {
+// 			Users[data.userId] = data;
+// 			accept(data)
+// 		} else {
+// 			accept(false)
+// 		}
+// 	});
+//
+// //Funcionalidad listar
+// //Usuarios normales
+// exports.getUsers = _ => {
+// 	return new Promise((accept, reject) => {
+// 		let data = Object.keys(Users).map(k => {
+// 			return {
+// 				userId: Users[k].userId,
+// 				givenName: Users[k].givenName,
+// 				familyName: Users[k].familyName,
+// 				gender: Users[k].gender
+// 			}
+// 		});
+// 		accept(data)
+// 	});
+// };
+//
+// exports.getUser = id => {
+// 	if (Users[id]) return [Users[id]];
+// 	else return []
+// };
+//
+// //Funcionalidad modificar
+// exports.updateUser = (userId, data) => new Promise((accept, reject) => {
+// 	if (Users[userId]) {
+// 		Users[userId] = data;
+// 		accept(true);
+// 	} else {
+// 		reject("No existe el usuario");
+// 	}
+// });
+//
+// //Funcionalidad borrar
+// exports.deleteUser = userId => {
+// 	return new Promise((accept, reject) => {
+// 		if (Users[userId]) {
+// 			delete (Users[userId]);
+// 			accept("La eliminación del usuario tuvo éxito");
+// 		} else {
+// 			reject("El usuario que desea eliminar no existe en la BBDD");
+// 		}
+// 	});
+// };
+
