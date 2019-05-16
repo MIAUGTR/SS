@@ -1,6 +1,7 @@
 
 const SSE = require('express-sse'); //Server-side events
 const M = require('./model');
+//const M = require('./myStream');
 const STREAM = new SSE();
 
 exports.middleware = (req, res, next) => {
@@ -59,7 +60,7 @@ exports.updateUser = (req, res) => {
 
 //Funcionalidad borrar
 exports.deleteUser = (req, res) => {
-    M.deleteUser(req.params.userId, req.params.rev).then(function(data){
+    M.deleteUser(req.query.id, req.query.rev).then(function(data){
         res.send(data);
     });
 };
@@ -160,3 +161,5 @@ exports.searchReport = (req, res) => M.searchReport(req.query.q)
 exports.updateReport = (req, res) => M.updateReport(req.params.doctorId, req.params.reportNumber, req.body)
     .then(data => res.send({result: data}));
  */
+
+
