@@ -26,6 +26,44 @@ exports.eventStream = (req, res) => {
 
 };
 
+//Funcionalidad añadir
+//Usuarios Normales
+exports.addUser = (req, res) => {
+    M.addUser(req.body).then(function(data){
+        res.send(data.data.id);
+    });
+};
+
+//Funcionalidad listar
+//Usuarios normales
+exports.getUsers = (req,res) => {
+    M.getUsers().then(function(data){
+        res.send(data.data);
+    });
+};
+
+//Lista un usuario
+exports.getUser = (req, res) => {
+    M.getUser(req.params.userId).then(function (data) {
+        res.send(data);
+    });
+};
+
+//Funcionalidad modificar
+exports.updateUser = (req, res) => {
+    M.updateUser(req.params.userId, req.body).then( data => {
+        console.log(data);
+        res.send({result: 'OK'})
+    });
+};
+
+//Funcionalidad borrar
+exports.deleteUser = (req, res) => {
+    M.deleteUser(req.params.userId, req.params.rev).then(function(data){
+        res.send(data);
+    });
+};
+
 /*//STREAM.init(req, res)
 //Funcionalidad añadir
 exports.addUser = (req, res) => {
@@ -89,49 +127,8 @@ exports.createReport = (req, res) => {
 
         res.send({result: 'OK'})
     });
-};*/
-
-exports.principal = (req, res) => {
-
 };
 
-//Funcionalidad añadir
-//Usuarios Normales
-exports.addUser = (req, res) => {
-    M.addUser(req.body).then(function(data){
-        res.send(data.data.id);
-    });
-};
-
-//Funcionalidad listar
-//Usuarios normales
-exports.getUsers = (req,res) => {
-    M.getUsers().then(function(data){
-        res.send(data.data);
-    });
-};
-
-exports.getUser = (req, res) => {
-    let cadena = "";
-    M.getUser(req.params.userId).then(data => {
-        cadena += "userId: " + data.data._id + " - rev: " + data.data._rev + " - givenName: " + data.data.givenName + " - familyName: " + data.data.familyName + " - email: " + data.data.email;
-        res.send(cadena);
-    });
-};
-
-//Funcionalidad modificar
-exports.updateUser = (req, res) => M.updateUser(req.params.userId, req.body).then( data => {
-    console.log(data);
-    res.send({result: 'OK'})
-});
-
-//Funcionalidad borrar
-exports.deleteUser = (req, res) => {
-    M.deleteUser(req.params.userId, req.params.rev).then(function(data){
-        res.send(data);
-    });
-};
-/*
 //Personal médico
 exports.getDoctors = (req, res) => {
     return M.getDoctors().then(data => res.send({result: data}));
@@ -163,5 +160,3 @@ exports.searchReport = (req, res) => M.searchReport(req.query.q)
 exports.updateReport = (req, res) => M.updateReport(req.params.doctorId, req.params.reportNumber, req.body)
     .then(data => res.send({result: data}));
  */
-
-
