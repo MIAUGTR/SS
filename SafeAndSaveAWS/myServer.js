@@ -1,66 +1,165 @@
-// Import section
-const bodyparser = require('body-parser');
-const express    = require('express');
-const control    = require('./controllers');
 
-//Express Web Server object
-const app = express();
+const SSE = require('express-sse'); //Server-side events
+const M = require('./model');
+//const M = require('./myStream');
+const STREAM = new SSE();
 
-//HTTP Body parsers for JSON
-app.use(bodyparser.urlencoded({extended:true}));
-app.use(bodyparser.json());
+exports.middleware = (req, res, next) => {
+	res.header('Access-Control-Allow-Origin', '*');
+	res.header('Access-Control-Allow-Headers',
+	           'Origin, Content-Type, Accept');
+    res.header('Cache-Control', 'no-cache');
 
-//Middleware
-app.use(control.middleware);
+	//log message
 
-//Routes of our REST service
-app.use('/web', express.static('public'));
+	console.log(Date(), req.method, req.url);
 
-app.get('/news', control.eventStream); //Server-side events
+	//Check access policy here
 
-//POST - AÑADIR
-app.post('/user/add', control.addUser);
-/*
-app.post('/doctor', control.addDoctor);
+	next();
+};
 
-app.post('/patient', control.addPatient);
+exports.eventStream = (req, res) => {
 
-app.post('/report', control.createReport);*/
+  console.log('Nueva conexion SSE ... Servidor Save&Safe activo!');
 
-//GET - LISTAR
-app.get('/users', control.getUsers);
+  STREAM.init(req, res);
 
-app.get('/user/:userId', control.getUser);
-/*
-app.get('/doctors/', control.getDoctors);
+};
 
-app.get('/doctor/:doctorId', control.getDoctor);
+//Funcionalidad añadir
+//Usuarios Normales
+exports.addUser = (req, res) => {
+    M.addUser(req.body).then(function(data){
+        res.send(data.data.id);
+    });
+};
 
-app.get('/patients/', control.getPatients);
+//Funcionalidad listar
+//Usuarios normales
+exports.getUsers = (req,res) => {
+    M.getUsers().then(function(data){
+        res.send(data.data);
+    });
+};
 
-app.get('/patient/:patientId', control.getPatient);
+//Lista un usuario
+exports.getUser = (req, res) => {
+    M.getUser(req.params.userId).then(function (data) {
+        res.send(data);
+    });
+};
 
-app.get('/reports', control.getReports);
+//Funcionalidad modificar
+exports.updateUser = (req, res) => {
+    M.updateUser(req.params.userId, req.body).then( data => {
+        console.log(data);
+        res.send({result: 'OK'})
+    });
+};
 
-app.get('/report/:reportNumber', control.getReportData);
+//Funcionalidad borrar
+exports.deleteUser = (req, res) => {
+    M.deleteUser(req.query.id, req.query.rev).then(function(data){
+        res.send(data);
+    });
+};
 
-app.get('/report/search', control.searchReport); //?q=motos
+/*//STREAM.init(req, res)
+//Funcionalidad añadir
+exports.addUser = (req, res) => {
+    return M.createUser(req.body).then(data => {
 
-app.get('/reports/doctor/:doctorId', control.getReportsByDoctor);
+        console.log('Creando usuario', data);
 
-app.get('/reports/patient/:patientId', control.getReportsByPatient);
+        STREAM.send(JSON.stringify({
+            userId: data.userId,
+            givenName: data.givenName,
+            familyName: data.familyName,
+            gender: data.gender
+        }), 'updates', 0);
 
-//app.get('/reports/both/:doctorId, :patientId', control.getReportsByBoth);
-*/
-//PUT - MODIFICAR
-app.post('/user/update/:userId', control.updateUser);
+        res.send({result: 'OK'})
+    });
+};
 
-//app.put('/report/:reportNumber', control.updateReport);
+exports.addDoctor = (req, res) => {
+    return M.createDoctor(req.body).then(data => {
 
-//DELETE - BORRAR
-app.post('/user/delete', control.deleteUser);
+        console.log('Creando personal médico', data);
+
+        STREAM.send(JSON.stringify({
+            doctorId: data.doctorId,
+            hospitalAffiliation: data.hospitalAffiliation,
+            medicalSpecialty: data.medicalSpecialty
+        }), 'updates', 0);
+
+        res.send({result: 'OK'})
+    });
+};
+
+exports.addPatient = (req, res) => {
+    return M.createPatient(req.body).then(data => {
+
+        console.log('Creando paciente', data);
+
+        STREAM.send(JSON.stringify({
+            patientId: data.patientId,
+            healthCondition: data.healthCondition,
+            drug: data.drug
+        }), 'updates', 0);
+
+        res.send({result: 'OK'})
+    });
+};
+
+exports.createReport = (req, res) => {
+    return M.createReport(req.body).then(data => {
+
+        console.log('Creando informe', data);
+
+        STREAM.send(JSON.stringify({
+            reportNumber: data.reportNumber,
+            doctorId: data.doctorId,
+            patientId: data.patientId,
+            backstory: data.backstory,
+            reportBody: data.reportBody
+        }), 'update', 0);
+
+        res.send({result: 'OK'})
+    });
+};
+
+//Personal médico
+exports.getDoctors = (req, res) => {
+    return M.getDoctors().then(data => res.send({result: data}));
+};
+
+exports.getDoctor = (req, res) => res.send({result:M.getDoctor(req.params.doctorId)});
+
+//Pacientes
+exports.getPatients = (req, res) => {
+    return M.getPatients.then(data => res.send({result: data}));
+};
+
+exports.getPatient = (req, res) => res.send({result:M.getPatient(req.params.patientId)});
+
+//Informes
+exports.getReports   = (req,res) => M.getReports().then(data => res.send({result: data}));
+
+exports.getReportData = (req,res) => res.send({result:M.getReportData(req.params.reportNumber)});
+
+exports.getReportsByDoctor   = (req,res) => res.send({result:M.getReportsByDoctor(req.params.doctorId)});
+
+exports.getReportsByPatient   = (req,res) => res.send({result:M.getReportsByPatient(req.params.patientId)});
+
+//exports.getReportsByBoth   = (req,res) => res.send({result:M.getReportsByPatient(req.params.doctorId, req.params.patientId)});
+
+exports.searchReport = (req, res) => M.searchReport(req.query.q)
+    .then(r => res.send({result: req.query.q}));
+
+exports.updateReport = (req, res) => M.updateReport(req.params.doctorId, req.params.reportNumber, req.body)
+    .then(data => res.send({result: data}));
+ */
 
 
-//Run server
-const PORT = 8080;
-app.listen(PORT, _ => console.log(`Servidor web escuchando en puerto ${PORT}`));
