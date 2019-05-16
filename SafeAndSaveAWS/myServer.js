@@ -2,7 +2,6 @@
 const bodyparser = require('body-parser');
 const express    = require('express');
 const control    = require('./controllers');
-const path       = require('path');
 
 //Express Web Server object
 const app = express();
@@ -14,16 +13,13 @@ app.use(bodyparser.json());
 //Middleware
 app.use(control.middleware);
 
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-
 //Routes of our REST service
 app.use('/web', express.static('public'));
 
 app.get('/news', control.eventStream); //Server-side events
 
 //POST - AÑADIR
-app.post('/user/add', control.addUser)
+app.post('/user/add', control.addUser);
 /*
 app.post('/doctor', control.addDoctor);
 
@@ -66,5 +62,5 @@ app.post('/user/delete/:userId:rev', control.deleteUser);
 
 
 //Run server
-const PORT = 8000
+const PORT = 8080;
 app.listen(PORT, _ => console.log(`Servidor web escuchando en puerto ${PORT}`));
