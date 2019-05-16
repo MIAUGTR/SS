@@ -58,7 +58,7 @@ app.post('/user/update/:userId', control.updateUser);
 //app.put('/report/:reportNumber', control.updateReport);
 
 //DELETE - BORRAR
-app.post('/user/delete/:userId:rev', control.deleteUser);
+app.post('/user/delete', control.deleteUser);
 
 
 //Run server
