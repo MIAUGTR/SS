@@ -46,26 +46,6 @@
 
         <b-alert variant="success" :show="showAlert">Hello {{ givenName }}</b-alert>
 
-        <!--<form method="post" action="/user/add" >
-          <label for="name">Nombre</label>
-          <input type="text" name="name" />
-          <small id="name" class="form-text text-muted">
-            Escribe el nombre del usuario.
-          </small>
-
-          <label for="familyName">Apellido</label>
-          <input type="text" name="familyName"/>
-          <small id="familyName" class="form-text text-muted">
-            Escribe el apellido del usuario.
-          </small>
-
-          <label for="email">Email</label>
-          <input type="email" name="email" />
-          <small id="email" class="form-text text-muted">
-            Escribe el email del usuario. Pulsa "enter" si quieres insertar los datos.
-          </small>
-          <input type="submit" value="Envia" >
-        </form>-->
 
         <label for="givenName">Nombre</label>
         <input type="text" id="givenName" class="form-control" v-model="givenName"/>
@@ -91,33 +71,26 @@
         <div>
             <p id="resultado"></p>
         </div>
-        <br/>
 
-        <div>
-            <p id="usuarios"></p>
-        </div>
-
-        <b-button class="btn btn-primary btn-sm" variant="danger" v-on:click="delUser(23a9716bbac8ab7e449f6e90520038ec, 1-2118961ed1340f4c466de53d6d6000fa)">Eliminar</b-button>
-
-
-        <!--        		Usuarios de la base de datos:-->
-<!--        		<ul>-->
-<!--        		  <li v-for="user, id in data">-->
-<!--        			{{id}} - {{user.familyName}} - {{user.email}}-->
-<!--        		  </li>-->
-<!--        		</ul>-->
-
-<!--        		Informes de la base de datos:-->
-<!--        		<small id="informe" class="form-text text-muted">-->
-<!--        		  Si desea ver los informes, ejecute el fichero test-server.js-->
-<!--        		</small>-->
-<!--        	  <ul>-->
-<!--        		<br/>-->
-<!--        		<li v-for="informe, id in reports">-->
-<!--        		  {{informe.givenName}} - {{informe.information}}-->
-<!--        		  <b-button class="btn btn-primary btn-sm" variant="danger" @click="delRep(id)">Eliminar</b-button>-->
-<!--        		</li>-->
-<!--        	  </ul>-->
+        Usuarios de la base de datos:
+              <table border="3px">
+                  <tr>
+                      <th>ID</th>
+                      <th>REV</th>
+                      <th>givenName</th>
+                      <th>familyName</th>
+                      <th>email</th>
+                      <th>Eliminar</th>
+                  </tr>
+                  <tr v-for="user, id in users">
+                      <td>{{user.id}}</td>
+                      <td>{{user.rev}}</td>
+                      <td>{{user.givenName}}</td>
+                      <td>{{user.familyName}}</td>
+                      <td>{{user.email}}</td>
+                      <td><b-button class="btn btn-danger btn-sm" v-on:click="delUser(user.id, user.rev, id)">Eliminar</b-button></td>
+                  </tr>
+              </table>
     </b-container>
 </div>
 
@@ -127,6 +100,7 @@
         el: '#app',
         data: {
             id: '',
+            rev: '',
             name: '',
             givenName: '',
             familyName: '',
@@ -136,21 +110,33 @@
             reports: []
     },
         methods: {
-            listar: function() {
+            listar: function () {
                 var xhr = new XMLHttpRequest();
-                document.getElementById("usuarios").innerHTML ="";
+                var vue = this;
+                //document.getElementById("usuarios").innerHTML ="";
                 xhr.open("GET", "/users", true);
                 xhr.setRequestHeader("Content-type", "application/json");
-                xhr.onreadystatechange = function () {
+                xhr.onreadystatechange = function (data) {
                     if (xhr.readyState === 4) {
                         let datos = JSON.parse(xhr.responseText);
-                        datos.rows.forEach(function(row){
-                            document.getElementById("usuarios").innerHTML += "userId: " + row.id + " - rev: " + row.value.rev + "" +
-                                " - givenName: " + row.value.givenName + " - familyName: " + row.value.familyName + " - email: " + row.value.email + " " +
-                                "<b-button v-model='id' class='btn btn-danger btn-sm' v-on:click='delUser(row.id, row.value.rev)'>Eliminar</b-button><br><br>";
+                        datos.rows.forEach(function (row) {
+                            data = {
+                                id: row.id,
+                                rev: row.value.rev,
+                                givenName: row.value.givenName,
+                                familyName: row.value.familyName,
+                                email: row.value.email
+                            };
+                            //console.log(data);
+                            vue.users.push(data);
+                            vue.id = '';
+                            vue.rev = '';
+                            vue.givenName = '';
+                            vue.familyName = '';
+                            vue.email = '';
                         });
                     }
-                };
+                }
                 xhr.send();
             },
             envia: function () {
@@ -166,30 +152,29 @@
                 xhr.setRequestHeader("Content-type", "application/json");
                 xhr.onreadystatechange = function () {
                     if (xhr.readyState === 4) {
-                        document.getElementById("resultado").innerText = "Se han enviado correctamente los datos";
-                        data.id = xhr.responseText;
+                        document.getElementById("resultado").innerText = "Se ha añadido correctamente el usuario";
                     }
                 };
                 xhr.send(JSON.stringify(data));
                 this.givenName = '';
                 this.familyName = '';
                 this.email = '';
+            },
+            delUser: function (id, rev, index) {
+                var xhr = new XMLHttpRequest();
+                var vue = this;
+                xhr.open("POST", "/user/delete", true);
+                xhr.setRequestHeader("Content-type", "application/json");
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4) {
+                        document.getElementById("resultado").innerText = "Se han eliminado al usuario" + id;
+                        var respuesta = JSON.parse(xhr.responseText);
+                        console.log(respuesta);
+                        vue.$delete(vue.user, index);
+                    }
+                };
+                xhr.send(id, rev);
             }
-        },
-        delUser: function(id, rev){
-            xhr.open("POST", "/user/delete/", true);
-            xhr.setRequestHeader("Content-type", "application/json");
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4) {
-                    document.getElementById("resultado").innerText = "Se han eliminado al usuario" + id;
-                    var respuesta = xhr.responseText;
-                    console.log(respuesta);
-                }
-            };
-            xhr.send(id, rev);
-        },
-        delRep(index) {
-            //this.$delete(this.reports, index);
         },
         created() {
             var self = this
